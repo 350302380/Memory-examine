@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoryTest.io - 记忆力挑战</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        #game-container {
+            display: none;
+            text-align: center;
+        }
+        #level-tracker {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .level {
+            width: 20px;
+            height: 20px;
+            margin: 0 2px;
+            background-color: #ddd;
+            border-radius: 3px;
+        }
+        .level.correct {
+            background-color: #4caf50;
+        }
+        .level.incorrect {
+            background-color: #f44336;
+        }
+        #number-display, #result-display {
+            font-size: 2em;
+            margin: 20px 0;
+        }
+        #input-container {
+            display: none;
+        }
+        #start-screen {
+            text-align: center;
+        }
+        #start-screen h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        #start-screen p {
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <h1>记忆力挑战</h1>
+        <p>游戏规则：游戏有 20 关，每一关会出现一个数字，请在 5 秒钟内记住这个数字。倒计时结束后，请在输入框中输入你记住的数字。答对会显示绿色，答错显示红色。得分越高越优秀！</p>
+        <button onclick="startGame()">开始游戏</button>
+    </div>
+
+    <div id="game-container">
+        <div id="level-tracker">
+            <!-- Level indicators -->
+            <span class="level" id="level-0"></span>
+            <span class="level" id="level-1"></span>
+            <span class="level" id="level-2"></span>
+            <span class="level" id="level-3"></span>
+            <span class="level" id="level-4"></span>
+            <span class="level" id="level-5"></span>
+            <span class="level" id="level-6"></span>
+            <span class="level" id="level-7"></span>
+            <span class="level" id="level-8"></span>
+            <span class="level" id="level-9"></span>
+            <span class="level" id="level-10"></span>
+            <span class="level" id="level-11"></span>
+            <span class="level" id="level-12"></span>
+            <span class="level" id="level-13"></span>
+            <span class="level" id="level-14"></span>
+            <span class="level" id="level-15"></span>
+            <span class="level" id="level-16"></span>
+            <span class="level" id="level-17"></span>
+            <span class="level" id="level-18"></span>
+            <span class="level" id="level-19"></span>
+        </div>
+        <div id="number-display"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="输入你记住的数字">
+            <button onclick="submitAnswer()">提交</button>
+        </div>
+        <div id="result-display"></div>
+    </div>
+
+    <script>
+        let currentLevel = 0;
+        let score = 0;
+        const levels = 20;
+        const levelScores = Array.from({ length: levels }, (_, i) => (i + 1) * 5);
+        const numberDisplay = document.getElementById("number-display");
+        const inputContainer = document.getElementById("input-container");
+        const userInput = document.getElementById("user-input");
+        const resultDisplay = document.getElementById("result-display");
+
+        function startGame() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("game-container").style.display = "block";
+            nextLevel();
+        }
+
+        function nextLevel() {
+            if (currentLevel >= levels) {
+                endGame();
+                return;
+            }
+            userInput.value = "";
+            resultDisplay.textContent = "";
+            inputContainer.style.display = "none";
+
+            let numLength = currentLevel + 1;
+            let randomNum = generateRandomNumber(numLength);
+            numberDisplay.textContent = randomNum;
+
+            setTimeout(() => {
+                numberDisplay.textContent = "";
+                inputContainer.style.display = "block";
+                userInput.focus();
+            }, 5000);
+
+            // Store the correct answer for checking
+            userInput.dataset.correctAnswer = randomNum;
+        }
+
+        function generateRandomNumber(length) {
+            let num = "";
+            for (let i = 0; i < length; i++) {
+                num += Math.floor(Math.random() * 10);
+            }
+            return num;
+        }
+
+        function submitAnswer() {
+            const correctAnswer = userInput.dataset.correctAnswer;
+            const userAnswer = userInput.value;
+            const levelIndicator = document.getElementById(`level-${currentLevel}`);
+
+            if (userAnswer === correctAnswer) {
+                levelIndicator.classList.add("correct");
+                score += levelScores[currentLevel];
+            } else {
+                levelIndicator.classList.add("incorrect");
+            }
+
+            currentLevel++;
+            nextLevel();
+        }
+
+        function endGame() {
+            numberDisplay.textContent = "";
+            inputContainer.style.display = "none";
+            let rating = "一般";
+            if (score >= 840) {
+                rating = "优秀";
+            }
+
+            resultDisplay.innerHTML = `游戏结束！你的总得分是 ${score} 分。<br>评价：${rating}`;
+        }
+    </script>
+</body>
+</html>
