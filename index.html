@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Test Game</title>
+  <style>
+    * { box-sizing: border-box; }
+    body, html { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f0f2f5; color: #333; }
+    #game-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+    #level-indicator { display: flex; gap: 5px; margin-bottom: 20px; }
+    .level { width: 20px; height: 20px; background: #ddd; border-radius: 50%; }
+    .correct { background: #4CAF50; }
+    .incorrect { background: #f44336; }
+    #game-info { display: none; }
+    #result { margin-top: 20px; font-size: 1.2em; }
+    #game-info, #input-section { display: none; }
+    button { padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <h1>Memory Test Game</h1>
+  <p id="description">游戏规则：每一关会出现一个随机数字，你需要在5秒内记住这个数字，然后输入正确的数字。每关得分不同，共20关，满分1050分。</p>
+  <button onclick="startGame()">开始游戏</button>
+  <div id="game-info">
+    <div id="level-indicator"></div>
+    <h2>第 <span id="level">1</span> 关</h2>
+    <p id="countdown"></p>
+    <p id="display-number"></p>
+    <div id="input-section">
+      <input type="text" id="user-input" placeholder="输入数字">
+      <button onclick="submitAnswer()">提交</button>
+    </div>
+  </div>
+  <div id="result"></div>
+</div>
+
+<script>
+  const totalLevels = 20;
+  const levelScores = Array.from({length: totalLevels}, (_, i) => (i + 1) * 5);
+  let currentLevel = 1;
+  let currentNumber = '';
+  let score = 0;
+
+  const levelIndicator = document.getElementById('level-indicator');
+  const countdownElement = document.getElementById('countdown');
+  const displayNumberElement = document.getElementById('display-number');
+  const inputSection = document.getElementById('input-section');
+  const userInput = document.getElementById('user-input');
+  const result = document.getElementById('result');
+
+  function startGame() {
+    document.querySelector('button').style.display = 'none';
+    document.getElementById('description').style.display = 'none';
+    document.getElementById('game-info').style.display = 'block';
+    
+    // Create level indicators
+    levelIndicator.innerHTML = '';
+    for (let i = 0; i < totalLevels; i++) {
+      const levelCircle = document.createElement('div');
+      levelCircle.className = 'level';
+      levelIndicator.appendChild(levelCircle);
+    }
+    nextLevel();
+  }
+
+  function nextLevel() {
+    if (currentLevel > totalLevels) {
+      endGame();
+      return;
+    }
+
+    displayNumberElement.style.display = 'block';
+    inputSection.style.display = 'none';
+    countdownElement.textContent = '';
+    displayNumberElement.textContent = '';
+    userInput.value = '';
+    userInput.focus();
+
+    document.getElementById('level').textContent = currentLevel;
+    currentNumber = generateRandomNumber(currentLevel);
+    displayNumberElement.textContent = currentNumber;
+
+    // 5-second countdown
+    let countdown = 5;
+    countdownElement.textContent = `倒计时: ${countdown}`;
+    const interval = setInterval(() => {
+      countdown -= 1;
+      countdownElement.textContent = `倒计时: ${countdown}`;
+      if (countdown <= 0) {
+        clearInterval(interval);
+        displayNumberElement.style.display = 'none';
+        inputSection.style.display = 'block';
+      }
+    }, 1000);
+  }
+
+  function generateRandomNumber(length) {
+    let number = '';
+    for (let i = 0; i < length; i++) {
+      number += Math.floor(Math.random() * 10).toString();
+    }
+    return number;
+  }
+
+  function submitAnswer() {
+    const answer = userInput.value;
+    const isCorrect = answer === currentNumber;
+    if (isCorrect) {
+      score += levelScores[currentLevel - 1];
+      levelIndicator.children[currentLevel - 1].classList.add('correct');
+    } else {
+      levelIndicator.children[currentLevel - 1].classList.add('incorrect');
+    }
+    currentLevel += 1;
+    nextLevel();
+  }
+
+  function endGame() {
+    document.getElementById('game-info').style.display = 'none';
+    let grade = '';
+    if (score >= 840) grade = '优秀';
+    else if (score >= 630) grade = '良好';
+    else grade = '一般';
+
+    result.innerHTML = `游戏结束！您的总得分是：${score}分。<br>评价：${grade}！`;
+  }
+</script>
+
+</body>
+</html>
